@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.Iec104DataPointMapper">
+    
+    <resultMap type="Iec104DataPoint" id="Iec104DataPointResult">
+        <id     property="id"           column="id"            />
+        <result property="fileId"       column="file_id"       />
+        <result property="frameType"    column="frame_type"    />
+        <result property="frameTime"    column="frame_time"    />
+        <result property="frameSeq"     column="frame_seq"     />
+        <result property="ioa"          column="ioa"           />
+        <result property="rawValue"     column="raw_value"     />
+        <result property="quantityName" column="quantity_name"  />
+        <result property="quantityUnit" column="quantity_unit"  />
+    </resultMap>
+    
+    <select id="selectDataPointList" parameterType="Iec104DataPoint" resultMap="Iec104DataPointResult">
+        select id, file_id, frame_type, frame_time, frame_seq, ioa, raw_value, quantity_name, quantity_unit
+        from iec104_data_point
+        <where>
+            <if test="fileId != null">AND file_id = #{fileId}</if>
+            <if test="frameType != null and frameType != ''">AND frame_type = #{frameType}</if>
+            <if test="ioa != null">AND ioa = #{ioa}</if>
+        </where>
+        order by frame_seq, ioa
+    </select>
+    
+    <insert id="batchInsertDataPoint" parameterType="java.util.List">
+        insert into iec104_data_point (file_id, frame_type, frame_time, frame_seq, ioa, raw_value, quantity_name, quantity_unit)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.fileId}, #{item.frameType}, #{item.frameTime}, #{item.frameSeq}, #{item.ioa}, #{item.rawValue}, #{item.quantityName}, #{item.quantityUnit})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteDataPointByFileId" parameterType="Long">
+        delete from iec104_data_point where file_id = #{fileId}
+    </delete>
+    
+    <select id="selectDistinctIoaByFileId" parameterType="Long" resultType="Integer">
+        select distinct ioa from iec104_data_point where file_id = #{fileId} order by ioa
+    </select>
+    
+    <select id="selectChartData" resultMap="Iec104DataPointResult">
+        select id, file_id, frame_type, frame_time, frame_seq, ioa, raw_value, quantity_name, quantity_unit
+        from iec104_data_point
+        where file_id = #{fileId}
+        <if test="ioas != null and ioas.size() > 0">
+            and ioa in
+            <foreach item="ioa" collection="ioas" open="(" separator="," close=")">
+                #{ioa}
+            </foreach>
+        </if>
+        and frame_type = 'S'
+        order by frame_seq, ioa
+    </select>
+    
+</mapper>

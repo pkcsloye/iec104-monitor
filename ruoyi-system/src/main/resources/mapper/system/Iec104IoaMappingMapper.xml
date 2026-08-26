@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.Iec104IoaMappingMapper">
+    
+    <resultMap type="Iec104IoaMapping" id="Iec104IoaMappingResult">
+        <id     property="mappingId"    column="mapping_id"    />
+        <result property="ioa"          column="ioa"           />
+        <result property="quantityName" column="quantity_name"  />
+        <result property="quantityType" column="quantity_type"  />
+        <result property="unit"         column="unit"           />
+        <result property="description"  column="description"    />
+        <result property="status"       column="status"         />
+        <result property="createBy"     column="create_by"      />
+        <result property="createTime"   column="create_time"    />
+        <result property="updateBy"     column="update_by"      />
+        <result property="updateTime"   column="update_time"    />
+        <result property="remark"       column="remark"         />
+    </resultMap>
+    
+    <sql id="selectMappingVo">
+        select mapping_id, ioa, quantity_name, quantity_type, unit, description, status, create_by, create_time, update_by, update_time, remark
+        from iec104_ioa_mapping
+    </sql>
+    
+    <select id="selectMappingList" parameterType="Iec104IoaMapping" resultMap="Iec104IoaMappingResult">
+        <include refid="selectMappingVo"/>
+        <where>
+            <if test="ioa != null">AND ioa = #{ioa}</if>
+            <if test="quantityName != null and quantityName != ''">AND quantity_name like concat('%', #{quantityName}, '%')</if>
+            <if test="quantityType != null and quantityType != ''">AND quantity_type = #{quantityType}</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+        order by ioa
+    </select>
+    
+    <select id="selectMappingById" parameterType="Long" resultMap="Iec104IoaMappingResult">
+        <include refid="selectMappingVo"/>
+        where mapping_id = #{mappingId}
+    </select>
+    
+    <select id="selectMappingByIoa" parameterType="Integer" resultMap="Iec104IoaMappingResult">
+        <include refid="selectMappingVo"/>
+        where ioa = #{ioa} limit 1
+    </select>
+    
+    <select id="selectAllEnabledMapping" resultMap="Iec104IoaMappingResult">
+        <include refid="selectMappingVo"/>
+        where status = '0'
+        order by ioa
+    </select>
+    
+    <insert id="insertMapping" parameterType="Iec104IoaMapping" useGeneratedKeys="true" keyProperty="mappingId">
+        insert into iec104_ioa_mapping (
+            <if test="ioa != null">ioa,</if>
+            <if test="quantityName != null and quantityName != ''">quantity_name,</if>
+            <if test="quantityType != null and quantityType != ''">quantity_type,</if>
+            <if test="unit != null and unit != ''">unit,</if>
+            <if test="description != null and description != ''">description,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        )values(
+            <if test="ioa != null">#{ioa},</if>
+            <if test="quantityName != null and quantityName != ''">#{quantityName},</if>
+            <if test="quantityType != null and quantityType != ''">#{quantityType},</if>
+            <if test="unit != null and unit != ''">#{unit},</if>
+            <if test="description != null and description != ''">#{description},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        )
+    </insert>
+    
+    <update id="updateMapping" parameterType="Iec104IoaMapping">
+        update iec104_ioa_mapping
+        <set>
+            <if test="ioa != null">ioa = #{ioa},</if>
+            <if test="quantityName != null and quantityName != ''">quantity_name = #{quantityName},</if>
+            <if test="quantityType != null">quantity_type = #{quantityType},</if>
+            <if test="unit != null">unit = #{unit},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </set>
+        where mapping_id = #{mappingId}
+    </update>
+    
+    <delete id="deleteMappingById" parameterType="Long">
+        delete from iec104_ioa_mapping where mapping_id = #{mappingId}
+    </delete>
+    
+    <delete id="deleteMappingByIds" parameterType="Long">
+        delete from iec104_ioa_mapping where mapping_id in
+        <foreach item="mappingId" collection="array" open="(" separator="," close=")">
+            #{mappingId}
+        </foreach>
+    </delete>
+    
+    <select id="checkIoaUnique" parameterType="Integer" resultMap="Iec104IoaMappingResult">
+        <include refid="selectMappingVo"/>
+        where ioa = #{ioa} limit 1
+    </select>
+    
+</mapper>
